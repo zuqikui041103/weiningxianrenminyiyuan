@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毕节市从业人员健康体检合格证</title>
+    <!-- 引入二维码与截图生成库 -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #eef2f5;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* 微信/扫码他人访问时的纯核验页面样式 */
+        .verify-only-view {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin: 20px auto;
+        }
+
+        .verify-header {
+            background: linear-gradient(135deg, #005bb5, #003e7e);
+            color: #ffffff;
+            padding: 24px 20px;
+            text-align: center;
+        }
+
+        .verify-header h1 {
+            font-size: 20px;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .verify-header p {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .verify-status-badge {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #005bb5;
+            padding: 10px;
+            margin: 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .verify-info-table {
+            width: 100%;
+            padding: 0 20px 20px 20px;
+            border-collapse: collapse;
+        }
+
+        .verify-info-table tr td {
+            padding: 12px 8px;
+            border-bottom: 1px dashed #e8e8e8;
+            font-size: 14px;
+        }
+
+        .verify-info-table tr td:first-child {
+            color: #666;
+            width: 100px;
+            font-weight: 500;
+        }
+
+        .verify-info-table tr td:last-child {
+            color: #1a1a1a;
+            font-weight: bold;
+        }
+
+        .verify-photo-box {
+            text-align: center;
+            padding: 16px 0;
+            background: #f9f9f9;
+        }
+
+        .verify-photo-box img {
+            width: 100px;
+            height: 130px;
+            object-fit: cover;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* 制作管理后台样式 */
+        .admin-layout {
+            display: flex;
+            gap: 30px;
+            max-width: 1100px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-panel {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            width: 340px;
+            flex-shrink: 0;
+        }
+
+        .control-panel h2 {
+            font-size: 18px;
+            color: #005bb5;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #005bb5;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary { background: #005bb5; color: #fff; }
+        .btn-success { background: #52c41a; color: #fff; }
+        .btn:hover { opacity: 0.9; }
+
+        /* 证件核心区域 - 严格贴合原图比例 (600px * 710px) */
+        .cert-card-outer {
+            background-color: #2b2b2b;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        .cert-card {
+            width: 580px;
+            height: 680px;
+            background: #ffffff;
+            position: relative;
+            box-sizing: border-box;
+            border: 1px solid #dcdcdc;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 证件上半部分 */
+        .cert-top {
+            height: 330px;
+            padding: 16px 24px;
+            position: relative;
+            background: #ffffff;
+            box-sizing: border-box;
+        }
+
+        .cert-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cdc-logo {
+            width: 56px;
+            height: 32px;
+            background: linear-gradient(135deg, #002b80 0%, #0055ff 100%);
+            border-radius: 16px 0 16px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff3333;
+            font-weight: 900;
+            font-size: 18px;
+            font-style: italic;
+            letter-spacing: -1px;
+            text-shadow: 1px 1px 0px #fff;
+        }
+
+        .cert-title {
+            font-size: 23px;
+            font-weight: 900;
+            color: #005bb5;
+            letter-spacing: 0.5px;
+            font-family: "SimHei", "黑体", sans-serif;
+        }
+
+        .top-serial {
+            font-size: 14px;
+            color: #222;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+        }
+
+        .cert-content-grid {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            z-index: 2;
+        }
+
+        .info-col {
+            flex: 1;
+            font-size: 16px;
+            line-height: 2.1;
+            font-family: "SimSun", "宋体", serif;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .info-label {
+            letter-spacing: 2px;
+            white-space: nowrap;
+        }
+
+        .info-val {
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+            font-size: 16px;
+        }
+
+        .media-col {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        #qrcode {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ccc;
+            padding: 2px;
+            background: #fff;
+            margin-top: 4px;
+        }
+
+        #qrcode img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .photo-box {
+            width: 110px;
+            height: 145px;
+            border: 1px solid #bbb;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 蓝色宣传语 */
+        .blue-banner {
+            background-color: #005bb5;
+            color: #ffffff;
+            text-align: center;
+            height: 38px;
+            line-height: 38px;
+            font-size: 15px;
+            letter-spacing: 8px;
+            font-family: "SimHei", "黑体", sans-serif;
+        }
+
+        /* 下半部分：使用说明 */
+        .cert-bottom {
+            flex: 1;
+            padding: 28px 30px 20px 30px;
+            background: #ffffff;
+        }
+
+        .instructions-title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 12px;
+            margin-bottom: 20px;
+            font-family: "SimHei", "黑体", sans-serif;
+            color: #111;
+        }
+
+        .instructions-list {
+            list-style: none;
+            font-size: 14.5px;
+            line-height: 2.1;
+            color: #111;
+            font-family: "SimSun", "宋体", serif;
+            font-weight: 600;
+        }
+
+        .instructions-list li {
+            margin-bottom: 6px;
+            text-align: justify;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 模式1：他人二次扫码显示的【仅核验结果页面】 -->
+<div class="verify-only-view" id="verifyOnlyView">
+    <div class="verify-header">
+        <h1>毕节市健康证明官方电子核验</h1>
+        <p>毕节市卫生健康委员会官方数据对接</p>
+    </div>
+    
+    <div class="verify-status-badge">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#005bb5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        核验成功：体检合格（真实有效）
+    </div>
+
+    <div class="verify-photo-box">
+        <img id="vPhoto" src="" alt="持证人照片">
+    </div>
+
+    <table class="verify-info-table">
+        <tr><td>体检姓名：</td><td id="vName">--</td></tr>
+        <tr><td>性别 / 年龄：</td><td id="vGenderAge">--</td></tr>
+        <tr><td>证件编号：</td><td id="vCertNo">--</td></tr>
+        <tr><td>发证日期：</td><td id="vDate">--</td></tr>
+        <tr><td>体检单位：</td><td>威宁县人民医院</td></tr>
+        <tr><td>体检结论：</td><td style="color:#52c41a;">从业人员健康体检合格</td></tr>
+        <tr><td>核验状态：</td><td style="color:#005bb5;">数据已同步防伪库</td></tr>
+    </table>
+</div>
+
+<!-- 模式2：制作管理后台 -->
+<div class="admin-layout" id="adminLayout">
+    <!-- 编辑操作区 -->
+    <div class="control-panel">
+        <h2>健康证信息配置</h2>
+        <div class="form-group">
+            <label>姓名：</label>
+            <input type="text" id="inputName" value="黄焕伦">
+        </div>
+        <div class="form-group">
+            <label>性别：</label>
+            <select id="inputGender">
+                <option value="男" selected>男</option>
+                <option value="女">女</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>年龄：</label>
+            <input type="number" id="inputAge" value="40">
+        </div>
+        <div class="form-group">
+            <label>个人照片（寸照）：</label>
+            <input type="file" id="inputPhoto" accept="image/*">
+        </div>
+        <button class="btn btn-primary" onclick="generateCert()">生成不重复证号与二维码</button>
+        <button class="btn btn-success" onclick="downloadImage()">一键保存证件图片 (PNG)</button>
+    </div>
+
+    <!-- 证件预览区 -->
+    <div class="cert-card-outer">
+        <div class="cert-card" id="certCard">
+            <div class="cert-top">
+                <div class="cert-header">
+                    <div class="logo-group">
+                        <div class="cdc-logo">CDC</div>
+                        <div class="cert-title">毕节市从业人员健康体检合格证</div>
+                    </div>
+                    <div class="top-serial" id="displayTopSerial">2261015532</div>
+                </div>
+
+                <div class="cert-content-grid">
+                    <div class="info-col">
+                        <div class="info-row">
+                            <span class="info-label">姓&nbsp;&nbsp;&nbsp;&nbsp;名：</span>
+                            <span class="info-val" id="displayName">黄焕伦</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">性&nbsp;&nbsp;&nbsp;&nbsp;别：</span>
+                            <span class="info-val" id="displayGender" style="width: 55px;">男</span>
+                            <span class="info-label">年&nbsp;&nbsp;龄：</span>
+                            <span class="info-val" id="displayAge">40</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">证&nbsp;&nbsp;&nbsp;&nbsp;号：</span>
+                            <span class="info-val" id="displayCertNo">BJWN040396</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">发证日期：</span>
+                            <span class="info-val" id="displayDate">2026年10月20日</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">体检单位：</span>
+                            <span class="info-val">威宁县人民医院</span>
+                        </div>
+                    </div>
+
+                    <div class="media-col">
+                        <div id="qrcode"></div>
+                        <div class="photo-box">
+                            <img id="displayPhoto" src="" alt="寸照">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="blue-banner">
+                关 注 民 生 健 康 &nbsp;&nbsp;&nbsp;&nbsp; 共 筑 和 谐 社 会
+            </div>
+
+            <div class="cert-bottom">
+                <div class="instructions-title">使 用 说 明</div>
+                <ol class="instructions-list">
+                    <li>1、本证适用于食品、药品、保健食品、化妆品、医疗器械、公共场所、生活饮用水、消毒产品等行业从业人员。</li>
+                    <li>2、从业人员工作时必须佩戴本证并自觉接受监督检查。</li>
+                    <li>3、持证人要妥善保管本证，如有遗失或损坏需及时补办。</li>
+                    <li>4、本证全市通用，签发之日起有效期一年。</li>
+                    <li>5、查询方法：通过扫码二维码查询体检信息。</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 内存存储保障永不重复
+    const createdCodesSet = new Set();
+    let currentBase64Photo = ""; // 存储 Base64 格式图片，彻底解决导出图片空白与跨域问题
+
+    // 生成默认 Base64 寸照（防止外部图片无法跨域保存）
+    function initDefaultPhoto() {
+        const canvas = document.createElement("canvas");
+        canvas.width = 110;
+        canvas.height = 145;
+        const ctx = canvas.getContext("2d");
+        // 绘制蓝色背景寸照
+        ctx.fillStyle = "#438edb";
+        ctx.fillRect(0, 0, 110, 145);
+        // 绘制简约人像轮廓
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(55, 50, 25, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(55, 135, 45, Math.PI, 0);
+        ctx.fill();
+        
+        currentBase64Photo = canvas.toDataURL("image/png");
+        document.getElementById("displayPhoto").src = currentBase64Photo;
+    }
+
+    // 随机生成 BJWN 开头的 6 位不重复编号
+    function getUniqueCode() {
+        let code = "";
+        do {
+            const randNum = Math.floor(Math.random() * 1000000);
+            code = "BJWN" + String(randNum).padStart(6, "0");
+        } while (createdCodesSet.has(code));
+        
+        createdCodesSet.add(code);
+        return code;
+    }
+
+    // 获取格式化时间
+    function getTodayFormatted() {
+        const d = new Date();
+        return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+    }
+
+    // 生成证件并合成动态二维码
+    function generateCert() {
+        const name = document.getElementById("inputName").value.trim() || "未命名";
+        const gender = document.getElementById("inputGender").value;
+        const age = document.getElementById("inputAge").value || "18";
+        const certNo = getUniqueCode();
+        const dateStr = getTodayFormatted();
+        const topSerial = Math.floor(1000000000 + Math.random() * 9000000000);
+
+        // 渲染页面界面
+        document.getElementById("displayName").innerText = name;
+        document.getElementById("displayGender").innerText = gender;
+        document.getElementById("displayAge").innerText = age;
+        document.getElementById("displayCertNo").innerText = certNo;
+        document.getElementById("displayDate").innerText = dateStr;
+        document.getElementById("displayTopSerial").innerText = topSerial;
+
+        // 打包用于扫码核验的数据
+        const verifyObject = {
+            name: name,
+            gender: gender,
+            age: age,
+            certNo: certNo,
+            dateStr: dateStr,
+            photo: currentBase64Photo // 将 Base64 嵌入二维码链接中（或短链接模拟）
+        };
+
+        // 将数据进行 Base64 编码
+        const encodedData = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(verifyObject)))));
+        
+        // 生成纯核验跳转地址
+        const baseUrl = window.location.href.split('?')[0];
+        const targetVerifyUrl = `${baseUrl}?vData=${encodedData}`;
+
+        // 渲染二维码
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = "";
+        new QRCode(qrContainer, {
+            text: targetVerifyUrl,
+            width: 100,
+            height: 100,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.L
+        });
+    }
+
+    // 处理用户选择的照片上传
+    document.getElementById("inputPhoto").addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                currentBase64Photo = evt.target.result;
+                document.getElementById("displayPhoto").src = currentBase64Photo;
+                generateCert(); // 照片更新后更新二维码
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // 保存图片
+    function downloadImage() {
+        const certDom = document.getElementById("certCard");
+        html2canvas(certDom, {
+            scale: 2, // 高清倍率
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: "#ffffff"
+        }).then(canvas => {
+            const link = document.createElement("a");
+            const name = document.getElementById("displayName").innerText;
+            const certNo = document.getElementById("displayCertNo").innerText;
+            link.download = `毕节市健康体检合格证_${name}_${certNo}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    }
+
+    // 页面加载时的入口逻辑
+    window.onload = function() {
+        initDefaultPhoto();
+
+        // 检测 URL 是否带着核验参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const vData = urlParams.get("vData");
+
+        if (vData) {
+            // 他人扫描二维码访问 -> 仅展示【核验页面】，隐藏后台界面
+            document.getElementById("adminLayout").style.display = "none";
+            document.getElementById("verifyOnlyView").style.display = "block";
+
+            try {
+                const parsed = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(vData)))));
+                document.getElementById("vName").innerText = parsed.name;
+                document.getElementById("vGenderAge").innerText = `${parsed.gender} / ${parsed.age} 岁`;
+                document.getElementById("vCertNo").innerText = parsed.certNo;
+                document.getElementById("vDate").innerText = parsed.dateStr;
+                document.getElementById("vPhoto").src = parsed.photo;
+            } catch (err) {
+                alert("核验信息格式错误或二维码失效！");
+            }
+        } else {
+            // 管理员/使用者访问 -> 显示正常制作管理页面
+            generateCert();
+        }
+    };
+</script>
+
+</body>
+</html>
